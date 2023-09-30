@@ -20,6 +20,7 @@ export const createVideo = async (req, res, next) => {
         fs.appendFileSync(outputFilePath, data);
         fs.unlinkSync(file.path);
       } catch (err) {
+        console.log(err)
         return res.status(500).json({ error: "Error processing video chunk" });
       }
     });
@@ -40,12 +41,14 @@ export const createVideo = async (req, res, next) => {
           videoUrl: video.videoUrl,
         });
       } catch (err) {
+        console.log(err);
         return res.status(500).json({ error: "Error saving video to database" });
       }
     });
 
     form.parse(req);
   } catch (err) {
+    console.log(err);
     return res.status(500).json({ error: "Error receiving video chunks" });
   }
 };
