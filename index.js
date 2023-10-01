@@ -3,7 +3,7 @@ import dotenv from "dotenv";
 import cors from "cors";
 import { connectDB } from "./config/db.js";
 import { errorHandler } from "./middlewares/error.js";
-import videoRoutes from './routes/videos.js';
+import uploadRoutes from './routes/uploads.js';
 import homeRoute from './routes/home.js';
 
 dotenv.config();
@@ -18,7 +18,7 @@ app.use(express.json());
 
 // Routes
 app.use("/api", homeRoute)
-app.use("/api/videos", videoRoutes);
+app.use("/api/uploads", uploadRoutes);
 
 // Error handler route
 app.use(errorHandler);
