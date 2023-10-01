@@ -14,6 +14,7 @@ export const uploadVideo = async (req, res, next) => {
     fileStream.on("finish", () => {
       console.log("Chunk saved to disk");
       const filePath = path.join(__dirname, uniqueFilename);
+      console.log("dirname: ", __dirname);
       console.log('Location of the output file: ', filePath);
       // Save the URL or local path to the stored video in a database here
       res.status(200).send("Chunk saved to disk");
