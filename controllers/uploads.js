@@ -3,6 +3,7 @@ import path from "path";
 import Video from "../models/Video.js"; // Import your video model
 
 export const uploadVideo = async (req, res, next) => {
+  let chunks = [];
   try {
     const uniqueFilename = `video-${Date.now()}.mp4`; // Generate a unique filename
 
@@ -12,32 +13,48 @@ export const uploadVideo = async (req, res, next) => {
       fs.mkdirSync(videosDir, { recursive: true });
     }
 
-    const fileStream = fs.createWriteStream(
-      path.join(videosDir, uniqueFilename),
-      { flags: "a" }
-    );
-
-    req.pipe(fileStream);
-
-    fileStream.on("finish", () => {
-      console.log("Chunk saved to disk");
-      const filePath = path.join(videosDir, uniqueFilename);
-      console.log("dirname: ", process.cwd());
-      console.log("Location of the output file: ", filePath);
-
-      // Get the server's base URL
-      const serverBaseUrl = req.protocol + "://" + req.get("host");
-
-      // Get the URL of the file
-      const fileUrl = serverBaseUrl + "/videos/" + uniqueFilename;
-
-      console.log("URL of the output file: ", fileUrl);
-
-      // Save the URL to the stored video in a database here
-      res.status(200).send("Chunk saved to disk");
+    // Collect all the chunks of data
+    req.on("data", (chunk) => {
+      chunks.push(chunk);
     });
 
-    fileStream.on("error", (error) => {
+    // Merge all the chunks of data into a single buffer when all data has been read
+    req.on("end", async () => {
+      const file = Buffer.concat(chunks);
+
+      // Write the buffer to a file
+      fs.writeFile(path.join(videosDir, uniqueFilename), file, async (err) => {
+        if (err) throw err;
+
+        console.log("File has been saved.");
+
+        // Get the server's base URL
+        const serverBaseUrl = req.protocol + "://" + req.get("host");
+
+        // Get the URL of the file
+        const fileUrl = serverBaseUrl + "/videos/" + uniqueFilename;
+
+        console.log("URL of the output file: ", fileUrl);
+
+        // Create a new video object
+        const video = new Video({
+          title: uniqueFilename, // Assuming you have a title field in your request body
+          filePath: path.join(videosDir, uniqueFilename),
+          fileUrl: fileUrl,
+        });
+
+        // Save the video object to the database
+        try {
+          const savedVideo = await video.save();
+          console.log("video saved")
+          res.status(201).json({ video: savedVideo });
+        } catch (error) {
+          res.status(400).json({ error });
+        }
+      });
+    });
+
+    req.on("error", (error) => {
       console.error("Error saving chunk to disk", error);
       next(error); // Pass the error to the error handler middleware
     });

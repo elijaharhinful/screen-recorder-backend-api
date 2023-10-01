@@ -7,6 +7,7 @@ import { connectDB } from "./config/db.js";
 import { errorHandler } from "./middlewares/error.js";
 import uploadRoutes from "./routes/uploads.js";
 import homeRoute from "./routes/home.js";
+import getVideos from "./routes/videos.js";
 
 dotenv.config();
 
@@ -28,6 +29,7 @@ app.use("/videos", express.static(path.join(__dirname, "videos")));
 // Routes
 app.use("/api", homeRoute);
 app.use("/api/uploads", uploadRoutes);
+app.use('/api/videos',getVideos);
 
 // Error handler route
 app.use(errorHandler);
