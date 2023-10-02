@@ -47,7 +47,7 @@ export const uploadVideo = async (req, res, next) => {
         try {
           const savedVideo = await video.save();
           console.log("video saved")
-          res.status(201).json({ video: savedVideo });
+          res.status(201).json({status: "200", video: savedVideo });
         } catch (error) {
           res.status(400).json({ error });
         }
